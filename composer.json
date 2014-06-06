@@ -1,0 +1,33 @@
+{
+    "name": "cornernote/yii-gearman",
+    "description": "Email system with templates and email queuing.",
+    "type": "library",
+    "license": "BSD-3-Clause",
+    "keywords": ["yii", "gearman", "yii-gearman", "mrphp"],
+    "authors": [
+        {
+            "name": "Brett O'Donnell",
+            "email": "cornernote@gmail.com",
+            "homepage": "http://mrphp.com.au/"
+        },
+        {
+            "name": "Zain ul abidin",
+            "email": "zainengineer@gmail.com"
+        },
+        {
+            "name": "Alexey Korchevsky",
+            "email": "mitallast@gmail.com"
+        }
+    ],
+    "require": {
+        "publero/net_gearman": ">=1.0.0"
+    },
+    "require-dev": {
+        "yiisoft/yii": "1.1.14"
+    },
+    "autoload": {
+        "classmap": [
+            "gearman/components/"
+        ]
+    }
+}
