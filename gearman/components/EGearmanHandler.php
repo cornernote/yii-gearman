@@ -1,6 +1,6 @@
 <?php
 /**
- * File contains class AbstractGearmanWorkerController
+ * File contains class EGearmanHandler
  *
  * @author Alexey Korchevsky <mitallast@gmail.com>
  * @link https://github.com/mitallast/yii-gearman
@@ -9,16 +9,12 @@
  */
 
 /**
- * Class AbstractWorkerController is the customized base controller class for workers.
- * All worker controllers must extend from this class or implements interface IWorkerController.
+ * Class EGearmanHandler is the customized base handler class for handler.
+ * All handlers must extend from this class or implements interface IGearmanHandler.
  *
  * @abstract
- * @author Alexey Korchevsky <mitallast@gmail.com>
- * @package ext.worker
- * @version 0.2
- * @since 0.2
  */
-abstract class AbstractGearmanWorkerController extends CController implements IGearmanWorkerController
+abstract class EGearmanHandler extends CController implements IGearmanHandler
 {
     /**
      * Creates the action instance based on the action name.
@@ -26,15 +22,14 @@ abstract class AbstractGearmanWorkerController extends CController implements IG
      * The latter is created by looking up the action map specified in {@link actions}.
      *
      * @param string $actionID ID of the action. If empty, the {@link defaultAction default action} will be used.
-     * @return IWorkerAction the action instance, null if the action does not exist.
-     * @see actions
+     * @return IHandlerAction the action instance, null if the action does not exist.
      */
     public function createAction($actionID)
     {
         if ($actionID === '')
             $actionID = $this->defaultAction;
         if (method_exists($this, 'action' . $actionID) && strcasecmp($actionID, 's')) // we have actions method
-            return new WorkerInlineAction($this, $actionID);
+            return new EGearmanInlineAction($this, $actionID);
         else
             return $this->createActionFromMap($this->actions(), $actionID, $actionID);
     }

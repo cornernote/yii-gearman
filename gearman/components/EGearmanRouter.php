@@ -1,6 +1,6 @@
 <?php
 /**
- * File contains class GearmanWorkerRouter
+ * File contains class EGearmanRouter
  *
  * @author Alexey Korchevsky <mitallast@gmail.com>
  * @link https://github.com/mitallast/yii-gearman
@@ -9,18 +9,19 @@
  */
 
 /**
- * Class GearmanWorkerRouter contains rules to route worker methods to controller actions.
+ * Class EGearmanRouter contains rules to route worker methods to handler actions.
  *
  * You need configure component in your application , example:
  * <code>
  * 'components' => array(
  *     ...
  *     'gearmanRouter' => array(
- *         'class' => 'GearmanWorkerRouter',
+ *         'class' => 'EGearmanRouter',
  *         'routes' => array(
- *             // worker api command name => route rule
- *             'strrevert' => 'workerController',
- *             'mystrrevert' => array('StrController', 'revert'),
+ *             // gearman api command name => route rule
+ *             'reverse' => 'defaultHandler',
+ *             'myreverse' => array('StringHandler', 'reverse'),
+ *             'var_dump' => new EGearmanRoute('var_dump', 'contoller', 'action'),
  *         ),
  *     ),
  * ),
@@ -29,9 +30,9 @@
  * For get route rule object , use method getRoute($commandName), example:
  * <code>
  * $rule = Yii::app()->gearmanRouter->getRoute('strRevert');
- * $controller = Yii::app()->createController($rule->controllerId);
- * $controller->init();
- * $action = $controller->createAction($rule->actionId);
+ * $handler = Yii::app()->createHandler($rule->handlerId);
+ * $handler->init();
+ * $action = $handler->createAction($rule->actionId);
  * </code>
  *
  * For use it, add Yii import rule:
@@ -42,37 +43,34 @@
  *     'gearman.components.*',
  * ),
  * </code>
- *
- *
- *
- * @author Alexey Korchevsky <mitallast@gmail.com>
- * @package ext.worker
- * @version 0.2
- * @since 0.2
  */
-class GearmanWorkerRouter extends CApplicationComponent implements IGearmanWorkerRouter
+class EGearmanRouter extends CApplicationComponent implements IGearmanRouter
 {
     /**
-     * Contains hash worker API commmand name to route object.
-     * @var CTypedMap<IGearmanWorkerRoute>
+     * Contains hash gearman API commmand name to route object.
+     * @var CTypedMap<IGearmanRoute>
      */
     private $_routeList;
 
+    /**
+     *
+     */
     public function __construct()
     {
-        $this->_routeList = new CTypedMap('IGearmanWorkerRoute');
+        $this->_routeList = new CTypedMap('IGearmanRoute');
     }
 
     /**
-     * Get route rule object by worker API command name.
+     * Get route rule object by gearman API command name.
      *
-     * @param IWorkerJob|string $command
-     * @return IGearmanWorkerRoute
+     * @param IGearmanJob|string $command
+     * @return IGearmanRoute
      */
     public function getRoute($command)
     {
-        if ($command instanceof IWorkerJob)
+        if ($command instanceof IGearmanJob) {
             $command = $command->getCommandName();
+        }
 
         $command = strtolower($command);
         return $this->_routeList->itemAt($command);
@@ -81,7 +79,7 @@ class GearmanWorkerRouter extends CApplicationComponent implements IGearmanWorke
     /**
      * Return all registered route rules.
      *
-     * @return IGearmanWorkerRoute[]
+     * @return IGearmanRoute[]
      */
     public function getRoutes()
     {
@@ -89,11 +87,10 @@ class GearmanWorkerRouter extends CApplicationComponent implements IGearmanWorke
     }
 
     /**
-     * Set route rule by controller name, action or custom route object.
+     * Set route rule by handler name, action or custom route object.
      *
-     * @param string $commandName worker API command name.
-     * @param string|array|IGearmanWorkerRoute $route parameters or object GearmanWorkerRoute.
-     * @see setRoutes
+     * @param string $commandName gearman API command name.
+     * @param string|array|IGearmanRoute $route parameters or object EGearmanRoute.
      * @throws InvalidArgumentException if route is invalid.
      * @throws CException if command name already have route rule.
      */
@@ -102,25 +99,25 @@ class GearmanWorkerRouter extends CApplicationComponent implements IGearmanWorke
         if (!$this->_routeList->contains(strtolower($commandName))) {
             $routeObject = null;
             if (is_string($route)) {
-                $routeObject = new GearmanWorkerRoute($commandName, $route, $commandName);
+                $routeObject = new EGearmanRoute($commandName, $route, $commandName);
             }
             elseif (is_array($route)) {
-                $routeObject = new GearmanWorkerRoute($commandName, $route[0], $route[1]);
+                $routeObject = new EGearmanRoute($commandName, $route[0], $route[1]);
             }
-            elseif ($route instanceof IGearmanWorkerRoute) {
+            elseif ($route instanceof IGearmanRoute) {
                 $routeObject = $route;
             }
             else {
                 throw new InvalidArgumentException(Yii::t(
-                    'worker',
-                    'Parameter "$route" must be string, array(2) or IGearmanWorkerRoute object, {type} given',
+                    'gearman',
+                    'Parameter "$route" must be string, array(2) or IGearmanRoute object, {type} given',
                     array('{type}' => gettype($route))
                 ));
             }
 
             $this->_routeList->add(strtolower($commandName), $routeObject);
         }
-        else throw new CException(Yii::t('worker', 'Command "{command}" is registered now'));
+        else throw new CException(Yii::t('gearman', 'Command "{command}" is registered now'));
     }
 
     /**
@@ -128,14 +125,13 @@ class GearmanWorkerRouter extends CApplicationComponent implements IGearmanWorke
      * <code>
      *
      * array(
-     *    'strrevert' => 'workerController',
-     *    'mystrrevert' => array('StrController', 'revert'),
-     *    'var_dump' => new GearmanWorkerRoute('var_dump', 'contoller', 'action'),
+     *    'reverse' => 'gearmanHandler',
+     *    'myreverse' => array('StringHandler', 'reverse'),
+     *    'var_dump' => new EGearmanRoute('var_dump', 'contoller', 'action'),
      * )
      * </code>
      *
      * @param array $routes routes map
-     * @see setRoute
      */
     public function setRoutes(array $routes)
     {

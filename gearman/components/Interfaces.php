@@ -1,6 +1,6 @@
 <?php
 /**
- * File contains all interfaces to worker components.
+ * File contains all interfaces to gearman components.
  *
  * @author Alexey Korchevsky <mitallast@gmail.com>
  * @link https://github.com/mitallast/yii-gearman
@@ -9,55 +9,45 @@
  */
 
 /**
- * Interface of worker application.
- *
- * @author Alexey Korchevsky <mitallast@gmail.com>
- * @package ext.worker
- * @version 0.2
- * @since 0.2
+ * Interface of gearman application.
  */
-interface IGearmanWorkerApplication
+interface IGearmanApplication
 {
     /**
      * @abstract
-     * @return IGearmanWorkerDaemon
+     * @return IGearmanWorker
      */
-    public function getWorkerDaemon();
+    public function getGearmanWorker();
 
     /**
      * @abstract
-     * @param IGearmanWorkerDaemon $worker
+     * @param IGearmanWorker $worker
      */
-    public function setWorkerDaemon(IGearmanWorkerDaemon $worker);
+    public function setGearmanWorker(IGearmanWorker $worker);
 
     /**
      * @abstract
-     * @return IGearmanWorkerRouter
+     * @return IGearmanRouter
      */
-    public function getWorkerRouter();
+    public function getGearmanRouter();
 
     /**
      * @abstract
-     * @param IGearmanWorkerRouter $router
+     * @param IGearmanRouter $router
      */
-    public function setWorkerRouter(IGearmanWorkerRouter $router);
+    public function setGearmanRouter(IGearmanRouter $router);
 
     /**
      * @abstract
-     * @param IGearmanWorkerJob $command
+     * @param IGearmanJob $command
      */
-    public function runCommand(IGearmanWorkerJob $command);
+    public function runCommand(IGearmanJob $command);
 }
 
 /**
- * Interface of worker daemon component.
- *
- * @author Alexey Korchevsky <mitallast@gmail.com>
- * @package ext.worker
- * @version 0.2
- * @since 0.2
+ * Interface of gearman worker component.
  */
-interface IGearmanWorkerDaemon extends IApplicationComponent
+interface IGearmanWorker extends IApplicationComponent
 {
     /**
      * @abstract
@@ -65,7 +55,7 @@ interface IGearmanWorkerDaemon extends IApplicationComponent
     public function run();
 
     /**
-     * Set daemon activity. If it started, this method is stopped it after cycle complete.
+     * Set worker activity. If it started, this method is stopped it after cycle complete.
      *
      * @abstract
      * @param bool $active
@@ -88,14 +78,9 @@ interface IGearmanWorkerDaemon extends IApplicationComponent
 }
 
 /**
- * Interface of worker job object.
- *
- * @author Alexey Korchevsky <mitallast@gmail.com>
- * @package ext.worker
- * @version 0.2
- * @since 0.2
+ * Interface of gearman job object.
  */
-interface IGearmanWorkerJob
+interface IGearmanJob
 {
     /**
      * @abstract
@@ -132,14 +117,9 @@ interface IGearmanWorkerJob
 }
 
 /**
- * Interface of worker router component.
- *
- * @author Alexey Korchevsky <mitallast@gmail.com>
- * @package ext.worker
- * @version 0.2
- * @since 0.2
+ * Interface of gearman router component.
  */
-interface IGearmanWorkerRouter extends IApplicationComponent
+interface IGearmanRouter extends IApplicationComponent
 {
     /**
      * @abstract
@@ -150,41 +130,36 @@ interface IGearmanWorkerRouter extends IApplicationComponent
     /**
      * @abstract
      * @param string $commandName
-     * @param array|IGearmanWorkerRoute $route
+     * @param array|IGearmanRoute $route
      * @return void
      */
     public function setRoute($commandName, $route);
 
     /**
      * @abstract
-     * @return IWorkerRoute[]
+     * @return IGearmanRoute[]
      */
     public function getRoutes();
 
     /**
-     * @param IGearmanWorkerJob|string $command
-     * @return IGearmanWorkerRoute
+     * @param IGearmanJob|string $command
+     * @return IGearmanRoute
      */
     public function getRoute($command);
 }
 
 /**
- * Interface of worker router route rule.
- *
- * @author Alexey Korchevsky <mitallast@gmail.com>
- * @package ext.worker
- * @version 0.2
- * @since 0.2
+ * Interface of gearman router route rule.
  */
-interface IGearmanWorkerRoute
+interface IGearmanRoute
 {
     /**
      * @abstract
      * @param string $commandName
-     * @param string $controllerId
+     * @param string $handlerId
      * @param string $actionId
      */
-    public function __construct($commandName, $controllerId, $actionId);
+    public function __construct($commandName, $handlerId, $actionId);
 
     /**
      * @abstract
@@ -196,7 +171,7 @@ interface IGearmanWorkerRoute
      * @abstract
      * @return string
      */
-    public function getControllerId();
+    public function getHandlerId();
 
     /**
      * @abstract
@@ -206,42 +181,38 @@ interface IGearmanWorkerRoute
 }
 
 /**
- * Interface of worker abstract action component.
- *
- * @author Alexey Korchevsky <mitallast@gmail.com>
- * @package ext.worker
- * @version 0.2
- * @since 0.2
+ * Interface of gearman abstract action component.
  */
-interface IGearmanWorkerAction extends IAction
+interface IGearmanAction extends IAction
 {
     /**
      * @abstract
-     * @param IWorkerJob $job
+     * @param IGearmanJob $job
      */
     public function setJob($job);
 
     /**
      * @abstract
-     * @return IWorkerJob
+     * @return IGearmanJob
      */
     public function getJob();
+
+    /**
+     * @abstract
+     * @return IGearmanHandler
+     */
+    public function getHandler();
 }
 
 /**
- * Interface of worker controller.
- *
- * @author Alexey Korchevsky <mitallast@gmail.com>
- * @package ext.worker
- * @version 0.2
- * @since 0.2
+ * Interface of handler.
  */
-interface IGearmanWorkerController
+interface IGearmanHandler
 {
     /**
      * @abstract
      * @param string $actionId
-     * @return IGearmanWorkerAction
+     * @return IGearmanAction
      */
     public function createAction($actionId);
 }

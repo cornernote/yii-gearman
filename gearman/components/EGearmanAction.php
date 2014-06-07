@@ -1,6 +1,6 @@
 <?php
 /**
- * File contains class AbstractGearmanWorkerAction
+ * File contains class EGearmanAction
  *
  * @author Alexey Korchevsky <mitallast@gmail.com>
  * @link https://github.com/mitallast/yii-gearman
@@ -9,28 +9,23 @@
  */
 
 /**
- * Class AbstractWorkerAction is realisation of IWorkerAction interface, the base class for all worker
- * controller action classes.
+ * Class EGearmanAction is realisation of IHandlerAction interface, the base class for all handler action classes.
  *
  * Component extends basic CAction for work with job object as action parameter.
  *
  * @abstract
- * @author Alexey Korchevsky <mitallast@gmail.com>
- * @package ext.worker
- * @version 0.2
- * @since 0.2
  */
-abstract class AbstractGearmanWorkerAction extends CAction implements IGearmanWorkerAction
+abstract class EGearmanAction extends CAction implements IGearmanAction
 {
     /**
-     * @var GearmanJob
+     * @var EGearmanJob
      */
     private $_job;
 
     /**
      * Set job to work in action.
      *
-     * @param GearmanJob $job
+     * @param EGearmanJob $job
      */
     public function setJob($job)
     {
@@ -40,10 +35,19 @@ abstract class AbstractGearmanWorkerAction extends CAction implements IGearmanWo
     /**
      * Get job to work in action.
      *
-     * @return GearmanJob
+     * @return EGearmanJob
      */
     public function getJob()
     {
         return $this->_job;
     }
+
+    /**
+     * @return EGearmanHandler
+     */
+    public function getHandler()
+    {
+        return parent::getController();
+    }
+
 }

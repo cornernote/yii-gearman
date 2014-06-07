@@ -1,6 +1,6 @@
 <?php
 /**
- * File contains class WorkerApplication
+ * File contains class EGearmanApplication
  *
  * @author Alexey Korchevsky <mitallast@gmail.com>
  * @link https://github.com/mitallast/yii-gearman
@@ -11,20 +11,20 @@
 require_once 'Interfaces.php';
 
 /**
- * Class GearmanWorkerApplication extends CApplication by providing functionality by worker specific requests.
+ * Class EGearmanApplication extends CApplication by providing functionality by gearman specific requests.
  *
- * GearmanWorkerApplication managers contollers in MVC pattern, provides specific core components to work with
+ * EGearmanApplication managers contollers in MVC pattern, provides specific core components to work with
  * job queue:
  * <ul>
- *    <li>{@link workerDaemon} GearmanWorkerDaemon, connect to job server queue, implements command routing.</li>
- *    <li>{@link workerRouter} GearmanWorkerRouter, implements command to controller action routing.</li>
+ *    <li>{@link gearmanWorker} EGearmanWorker, connect to job server queue, implements command routing.</li>
+ *    <li>{@link gearmanRouter} EGearmanRouter, implements command to handler action routing.</li>
  * </ul>
  *
- * Example of worker bootstrap script:
+ * Example of gearman bootstrap script:
  * <code>
  * // change the following paths if necessary
  * $yii=dirname(__FILE__).'/../yii/yii.php';
- * $config=dirname(__FILE__).'/protected/config/worker.php';
+ * $config=dirname(__FILE__).'/protected/config/gearman.php';
  *
  * // remove the following lines when in production mode
  * defined('YII_DEBUG') or define('YII_DEBUG', true);
@@ -32,12 +32,12 @@ require_once 'Interfaces.php';
  * // specify how many levels of call stack should be shown in each log message
  * defined('YII_TRACE_LEVEL') or define('YII_TRACE_LEVEL', 3);
  * require_once($yii);
- * require_once(dirname(__FILE__) . '/protected/extensions/worker/WorkerApplication.php');
+ * require_once(dirname(__FILE__) . '/protected/extensions/gearman/EGearmanApplication.php');
  *
- * Yii::createApplication('WorkerApplication', $config)->run();
+ * Yii::createApplication('EGearmanApplication', $config)->run();
  * </code>
  *
- * Example of worker config:
+ * Example of gearman config:
  * <code>
  * return array(
  *     'basePath' => dirname(__FILE__).DIRECTORY_SEPARATOR.'..',
@@ -49,32 +49,25 @@ require_once 'Interfaces.php';
  *     ),
  *     'components' => array(
  *         'gearmanWorker' => array(
- *             'class' => 'GearmanWorkerDaemon',
+ *             'class' => 'EGearmanWorker',
  *             'servers' => array('127.0.0.1'),
  *         ),
  *         'gearmanRouter' => array(
- *             'class' => 'GearmanWorkerRouter',
+ *             'class' => 'EGearmanRouter',
  *             'routes' => array(
- *                 'reverse' => 'application.controllers.gearman',
+ *                 'reverse' => 'application.handlers.gearman',
  *             ),
  *         ),
  *    ),
  * );
  * </code>
- *
- * @author Alexey Korchevsky <mitallast@gmail.com>
- * @package ext.worker
- * @version 0.2
- * @since 0.2
- *
- * @param
  */
-class GearmanWorkerApplication extends CApplication implements IGearmanWorkerApplication
+class EGearmanApplication extends CApplication implements IGearmanApplication
 {
     /**
-     * @return string the ID of the default controller. Defaults to 'worker'.
+     * @return string the ID of the default handler. Defaults to 'gearman'.
      */
-    public $defaultController = 'worker';
+    public $defaultHandler = 'default';
 
     /**
      * @var bool
@@ -82,23 +75,23 @@ class GearmanWorkerApplication extends CApplication implements IGearmanWorkerApp
     private $_isGearmanPecl;
 
     /**
-     * Start worker cycle.
-     * To add custom route rules you can add in at worker.
+     * Start gearman cycle.
+     * To add custom route rules you can add in at handler.
      * <code>
      *
      * // add callback in php5.3 style
-     * $app->getWorker()->setCommand('commandName', function($job){
+     * $app->getHandler()->setCommand('commandName', function($job){
      *      $job->setReturn($data->getMessage());
      * });
      *
      * // add callback as
-     * $app->getWorker()->setCommand('commandName', array('controllerId', 'action'));
+     * $app->getWorker()->setCommand('commandName', array('handlerId', 'action'));
      * </code>
      */
     public function processRequest()
     {
-        $routes = $this->getWorkerRouter()->getRoutes();
-        $worker = $this->getWorkerDaemon();
+        $routes = $this->getGearmanRouter()->getRoutes();
+        $worker = $this->getGearmanWorker();
 
         foreach ($routes as $route) {
             $worker->setCommand($route->getCommandName(), array($this, 'runCommand'));
@@ -108,85 +101,83 @@ class GearmanWorkerApplication extends CApplication implements IGearmanWorkerApp
     }
 
     /**
-     * Get worker daemon component.
-     * Also you can call $app->getComponent('worker') or $app->worker.
+     * Get gearman worker component.
+     * Also you can call $app->getComponent('gearman') or $app->worker.
      *
-     * @return WorkerDaemon
+     * @return EGearmanWorker
      */
-    public function getWorkerDaemon()
+    public function getGearmanWorker()
     {
-        return $this->getComponent('workerDaemon');
+        return $this->getComponent('gearmanWorker');
     }
 
     /**
-     * Set worker daemon component.
+     * Set gearman worker component.
      * Also you can call $app->setWorker('router', $component) or $app->router = $component.
      *
      * @param mixed $worker
-     * @see setComponent
      */
-    public function setWorkerDaemon(IGearmanWorkerDaemon $worker)
+    public function setGearmanWorker(IGearmanWorker $worker)
     {
-        $this->setComponent('workerDaemon', $worker);
+        $this->setComponent('gearmanWorker', $worker);
     }
 
     /**
-     * Get worker route component.
+     * Get gearman route component.
      * Also you can call $app->getComponent('router') or $app->router.
      *
-     * @return WorkerRouter
-     * @see getComponent
+     * @return EGearmanRouter
      */
-    public function getWorkerRouter()
+    public function getGearmanRouter()
     {
-        return $this->getComponent('workerRouter');
+        return $this->getComponent('gearmanRouter');
     }
 
     /**
-     * Set worker route component.
+     * Set gearman route component.
      * Also you can call $app->setComponent('router', $component) or $app->router = $component.
      *
-     * @param mixed $workerRouter
+     * @param mixed $gearmanRouter
      * @return void
      */
-    public function setWorkerRouter(IGearmanWorkerRouter $workerRouter)
+    public function setGearmanRouter(IGearmanRouter $gearmanRouter)
     {
-        $this->setComponent('workerRouter', $workerRouter);
+        $this->setComponent('gearmanRouter', $gearmanRouter);
     }
 
     /**
-     * Default callback worker daemon.
+     * Default callback gearman worker.
      * It's calls when worker get new job and router have not custom callback.
      *
-     * @param GearmanWorkerJob $job
+     * @param IGearmanJob $job
      * @throws CException
      * @throws Exception
      */
-    public function runCommand(IGearmanWorkerJob $job)
+    public function runCommand(IGearmanJob $job)
     {
         try {
-            $route = $this->getWorkerRouter()->getRoute($job);
+            $route = $this->getGearmanRouter()->getRoute($job);
 
             if (is_null($route)) {
-                $controllerId = $this->defaultController;
+                $handlerId = $this->defaultHandler;
                 $actionId = $job->getCommandName();
             }
             else {
-                $controllerId = $route->getControllerId();
+                $handlerId = $route->getHandlerId();
                 $actionId = $route->getCommandName();
             }
 
+            $handler = $this->createHandler($handlerId);
+            $handler->init();
 
-            $controller = $this->createController($controllerId);
-            $controller->init();
-
-            /** @var $action IWorkerAction */
-            $action = $controller->createAction($actionId);
-            if ($action instanceof IWorkerAction) {
+            $action = $handler->createAction($actionId);
+            if ($action instanceof IGearmanAction) {
                 $action->setJob($job);
                 $action->run();
             }
-            else throw new CException(Yii::t('worker', 'Action is not instance of IWorkerAction'));
+            else {
+                throw new CException(Yii::t('gearman', 'Action is not instance of IGearmanAction'));
+            }
         } catch (Exception $e) {
             $job->sendException($e);
             throw $e;
@@ -235,6 +226,7 @@ class GearmanWorkerApplication extends CApplication implements IGearmanWorkerApp
         if (YII_DEBUG) {
             echo get_class($exception) . "\n";
             echo $exception->getMessage() . ' (' . $exception->getFile() . ' : ' . $exception->getLine() . "\n";
+            echo $exception->getMessage() . ' (' . $exception->getFile() . ' : ' . $exception->getLine() . "\n";
             echo $exception->getTraceAsString() . "\n";
         }
         else {
@@ -246,18 +238,17 @@ class GearmanWorkerApplication extends CApplication implements IGearmanWorkerApp
     /**
      * Registers the core application components.
      * This method overrides the parent implementation by registering additional core components.
-     * @see setComponents
      */
     protected function registerCoreComponents()
     {
         parent::registerCoreComponents();
 
         $components = array(
-            'workerDaemon' => array(
-                'class' => 'GearmanWorkerDaemon',
+            'gearmanWorker' => array(
+                'class' => 'EGearmanWorker',
             ),
-            'workerRouter' => array(
-                'class' => 'GearmanWorkerRouter',
+            'gearmanRouter' => array(
+                'class' => 'EGearmanRouter',
             ),
         );
 
@@ -265,33 +256,33 @@ class GearmanWorkerApplication extends CApplication implements IGearmanWorkerApp
     }
 
     /**
-     * Parse controller id string and return controller class instance.
+     * Parse handler id string and return handler class instance.
      *
-     * @param string $controllerId
+     * @param string $handlerId
      * @throws CException
      * @throws InvalidArgumentException
-     * @return IWorkerController
+     * @return IGearmanHandler
      */
-    protected function createController($controllerId)
+    public function createHandler($handlerId)
     {
-        $controllerId = trim($controllerId);
+        $handlerId = trim($handlerId);
 
-        if (!strlen($controllerId))
-            throw new InvalidArgumentException(Yii::t('worker', 'Invalid controller id'));
+        if (!strlen($handlerId))
+            throw new InvalidArgumentException(Yii::t('gearman', 'Invalid handler id'));
 
         $path = null;
         $className = null;
         $classFile = null;
-        if (strpos($controllerId, '.')) {
-            $lastDot = strrpos($controllerId, '.');
-            $path = substr($controllerId, 0, $lastDot);
-            $className = $controllerId = substr($controllerId, $lastDot + 1);
+        if (strpos($handlerId, '.')) {
+            $lastDot = strrpos($handlerId, '.');
+            $path = substr($handlerId, 0, $lastDot);
+            $className = $handlerId = substr($handlerId, $lastDot + 1);
         }
         else
-            $className = $controllerId;
+            $className = $handlerId;
 
-        if (!strpos($className, 'Controller')) {
-            $className = ucfirst($className) . 'Controller';
+        if (!strpos($className, 'Handler')) {
+            $className = ucfirst($className) . 'Handler';
         }
         if ($path)
             $classFile = $path . '.' . $className;
@@ -304,23 +295,13 @@ class GearmanWorkerApplication extends CApplication implements IGearmanWorkerApp
 
         if (class_exists($className, false)) {
             if (is_subclass_of($className, 'CController')) {
-                return new $className($controllerId);
+                return new $className($handlerId);
             }
             else
-                throw new CException(Yii::t('worker', "Class \"{class}\" is not subclass of CController", array('{class}' => $className)));
+                throw new CException(Yii::t('gearman', 'Class "{class}" is not subclass of CController', array('{class}' => $className)));
         }
         else
-            throw new CException(Yii::t('worker', "Class \"{class}\" is not found", array('{class}' => $className)));
+            throw new CException(Yii::t('gearman', 'Class "{class}" is not found', array('{class}' => $className)));
     }
 
-    /**
-     * @return bool
-     */
-    public function getIsGearmanPecl()
-    {
-        if ($this->_isGearmanPecl === null) {
-            $this->_isGearmanPecl = class_exists('GearmanWorker', false);
-        }
-        return $this->_isGearmanPecl;
-    }
 }

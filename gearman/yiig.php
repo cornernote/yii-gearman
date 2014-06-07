@@ -2,7 +2,7 @@
 /**
  * Yii Gearman Worker.
  *
- * This script is meant to be run on command line to execute Gearman worker actions.
+ * This script is meant to be run on command line to execute Gearman handler actions.
  *
  * You chould copy this file to your protected folder (the same folder as your yiic.php)
  */
@@ -30,11 +30,11 @@ defined('YII_GEARMAN_PATH') or define('YII_GEARMAN_PATH', 'vendor/cornernote/yii
 /**
  * Path to your config file
  */
-$config = 'config/worker.php';
+$config = 'config/gearman.php';
 
 /**
  * run the Yii app (Yii-Haw!)
  */
 require_once(YII_PATH . '/yii.php');
-require_once(YII_GEARMAN_PATH . '/components/GearmanWorkerApplication.php');
-Yii::createApplication('GearmanWorkerApplication', $config)->run();
+require_once(YII_GEARMAN_PATH . '/components/EGearmanApplication.php');
+Yii::createApplication('EGearmanApplication', $config)->run();

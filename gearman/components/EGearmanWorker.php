@@ -1,6 +1,6 @@
 <?php
 /**
- * File contains class GearmanWorkerDaemon
+ * File contains class EGearmanWorker
  *
  * @author Alexey Korchevsky <mitallast@gmail.com>
  * @link https://github.com/mitallast/yii-gearman
@@ -9,12 +9,12 @@
  */
 
 /**
- * Class GearmanWorkerDaemon represent API of asynchronous workers.
+ * Class EGearmanWorker represent API of asynchronous workers.
  * For use component, you can register it in Yii application config:
  * <code>
  * 'components' => array(
- *     'worker' => array(
- *         'class' => 'GearmanWorkerDaemon',
+ *     'gearmanWorker' => array(
+ *         'class' => 'EGearmanWorker',
  *         'servers' => array(
  *             'gearman.loc',  // simple, by address
  *             '127.0.0.33', // simple, by ip and default port
@@ -23,16 +23,11 @@
  *     ),
  * ),
  * </code>
- *
- * @author Alexey Korchevsky <mitallast@gmail.com>
- * @package ext.worker
- * @version 0.2
- * @since 0.2
  */
-class GearmanWorkerDaemon extends CApplicationComponent implements IGearmanWorkerDaemon
+class EGearmanWorker extends CApplicationComponent implements IGearmanWorker
 {
     /**
-     * @var \GearmanWorker|\Net\Gearman\Worker
+     * @var GearmanWorker
      */
     private $_worker;
 
@@ -51,12 +46,7 @@ class GearmanWorkerDaemon extends CApplicationComponent implements IGearmanWorke
      */
     public function __construct()
     {
-        if (class_exists('GearmanWorker', false)) {
-            $this->_worker = new GearmanWorker();
-        }
-        else {
-            $this->_worker = new \Net\Gearman\Worker();
-        }
+        $this->_worker = new GearmanWorker();
     }
 
     /**
@@ -66,18 +56,17 @@ class GearmanWorkerDaemon extends CApplicationComponent implements IGearmanWorke
      */
     public function run()
     {
-        $worker = $this->_worker;
         $this->setActive(true);
-        while ($worker->work() && $this->getActive()) {
-            if ($worker->returnCode() != GEARMAN_SUCCESS) {
-                echo 'return_code: ' . $worker->returnCode() . "\n";
+        while ($this->_worker->work() && $this->getActive()) {
+            if ($this->_worker->returnCode() != GEARMAN_SUCCESS) {
+                echo 'return_code: ' . $this->_worker->returnCode() . "\n";
                 break;
             }
         }
     }
 
     /**
-     * Set daemon activity. If it started, this method is stopped it after cycle complete.
+     * Set worker activity. If it started, this method is stopped it after cycle complete.
      *
      * @param bool $active
      */
@@ -87,7 +76,7 @@ class GearmanWorkerDaemon extends CApplicationComponent implements IGearmanWorke
     }
 
     /**
-     * Check is daemon in running.
+     * Check is worker in running.
      *
      * @return bool
      */
@@ -98,7 +87,7 @@ class GearmanWorkerDaemon extends CApplicationComponent implements IGearmanWorke
 
     /**
      * Magic caller to worker function router.
-     * Routes callbacks in daemon.
+     * Routes callbacks in worker.
      *
      * @param string $functionName
      * @param array $params
@@ -109,20 +98,15 @@ class GearmanWorkerDaemon extends CApplicationComponent implements IGearmanWorke
     {
         if (isset($this->_callbackHash[strtolower($functionName)])) {
             $callback = $this->_callbackHash[strtolower($functionName)];
-            if (class_exists('GearmanJob')) {
-                $job = new GearmanJob($params[0]);
-            }
-            else {
-                $job = new \Net\Gearman\Task($params[0]);
-            }
+            $job = new EGearmanJob($params[0]);
             return call_user_func($callback, $job);
         }
         else
-            throw new CException(Yii::t('worker', 'Call to undefined method "{method}"', array('{method}' => $functionName)));
+            throw new CException(Yii::t('gearman', 'Call to undefined method "{method}"', array('{method}' => $functionName)));
     }
 
     /**
-     * Register command callback in worker daemon.
+     * Register command callback in gearman worker.
      *
      * @param string $commandName
      * @param mixed $callback
@@ -134,7 +118,7 @@ class GearmanWorkerDaemon extends CApplicationComponent implements IGearmanWorke
     }
 
     /**
-     * Unregister command in daemon by name and remove callback.
+     * Unregister command in worker by name and remove callback.
      *
      * @param string $commandName
      * @return void
@@ -198,9 +182,7 @@ class GearmanWorkerDaemon extends CApplicationComponent implements IGearmanWorke
     public function setOptions($options)
     {
         $options = (int)$options;
-        if (class_exists('GearmanWorker')) {
-            $this->_worker->setOptions($options);
-        }
+        $this->_worker->setOptions($options);
     }
 
     /**
@@ -213,9 +195,7 @@ class GearmanWorkerDaemon extends CApplicationComponent implements IGearmanWorke
     public function removeOptions($options)
     {
         $options = (int)$options;
-        if (class_exists('GearmanWorker')) {
-            $this->_worker->removeOptions($options);
-        }
+        $this->_worker->removeOptions($options);
     }
 
     /**
@@ -228,8 +208,6 @@ class GearmanWorkerDaemon extends CApplicationComponent implements IGearmanWorke
     public function setTimeout($timeout)
     {
         $timeout = (int)$timeout;
-        if (class_exists('GearmanWorker')) {
-            $this->_worker->setTimeout($timeout);
-        }
+        $this->_worker->setTimeout($timeout);
     }
 }

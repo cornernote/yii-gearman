@@ -1,6 +1,6 @@
 <?php
 /**
- * File contains class WorkerRoute
+ * File contains class EGearmanRoute
  *
  * @author Alexey Korchevsky <mitallast@gmail.com>
  * @link https://github.com/mitallast/yii-gearman
@@ -9,15 +9,9 @@
  */
 
 /**
- * Class GearmanWorkerRoute. Contains worker API command name, and route to controller action.
- *
- * @author Alexey Korchevsky <mitallast@gmail.com>
- * @see WorkerRouter
- * @package ext.worker
- * @version 0.2
- * @since 0.2
+ * Class EGearmanRoute. Contains gearman API command name, and route to handler action.
  */
-class GearmanWorkerRoute extends CComponent implements IGearmanWorkerRoute
+class EGearmanRoute extends CComponent implements IGearmanRoute
 {
     /**
      * @var string
@@ -32,22 +26,22 @@ class GearmanWorkerRoute extends CComponent implements IGearmanWorkerRoute
     /**
      * @var string
      */
-    private $_controllerId;
+    private $_handlerId;
 
     /**
      * @param string $commandName
-     * @param string $controllerId
+     * @param string $handlerId
      * @param string $actionId
      */
-    public function __construct($commandName, $controllerId, $actionId)
+    public function __construct($commandName, $handlerId, $actionId)
     {
         $this->_commandName = (string)$commandName;
-        $this->_controllerId = (string)$controllerId;
+        $this->_handlerId = (string)$handlerId;
         $this->_actionId = (string)$actionId;
     }
 
     /**
-     * Get controller action id.
+     * Get handler action id.
      *
      * @return string
      */
@@ -57,16 +51,16 @@ class GearmanWorkerRoute extends CComponent implements IGearmanWorkerRoute
     }
 
     /**
-     * Get controller id.
+     * Get handler id.
      * @return string
      */
-    public function getControllerId()
+    public function getHandlerId()
     {
-        return $this->_controllerId;
+        return $this->_handlerId;
     }
 
     /**
-     * Get worker API command name.
+     * Get gearman API command name.
      *
      * @return string
      */

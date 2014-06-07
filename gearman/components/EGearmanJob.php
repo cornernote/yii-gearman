@@ -1,6 +1,6 @@
 <?php
 /**
- * File contains class GearmanWorkerJob
+ * File contains class EGearmanJob
  *
  * @author Alexey Korchevsky <mitallast@gmail.com>
  * @link https://github.com/mitallast/yii-gearman
@@ -9,43 +9,38 @@
  */
 
 /**
- * Class GearmanWorkerJob implements worker job interface realisation for gearman {@link http://gearman.org/}.
- * Object is transfer data to controller. Data may be only string, transfer don't use php- or JSON-serialisation.
+ * Class EGearmanJob implements worker job interface realisation for gearman {@link http://gearman.org/}.
+ * Object is transfer data to handler. Data may be only string, transfer don't use php- or JSON-serialisation.
  * It's not recommended use language-specific serialization, because workers may be written at another languages,
  * like C, C++, Python or Ruby.
  *
  * This is a wrapper to gearman job object. It's need to use alternative no-gearman realisation.
- *
- * @author Alexey Korchevsky <mitallast@gmail.com>
- * @package ext.worker
- * @version 0.2
- * @since 0.2
  */
-class GearmanWorkerJob extends CComponent implements IGearmanWorkerJob
+class EGearmanJob extends CComponent implements IGearmanJob
 {
     /**
      * @var GearmanJob
      */
-    private $job;
+    private $_job;
 
     /**
      * Constructor.
      *
      * @param GearmanJob $job
      */
-    public function __construct(GearmanJob $job)
+    public function __construct($job)
     {
-        $this->job = $job;
+        $this->_job = $job;
     }
 
     /**
-     * Get worker API called command name.
+     * Get gearman API called command name.
      *
      * @return string
      */
     public function getCommandName()
     {
-        return $this->job->functionName();
+        return $this->_job->functionName();
     }
 
     /**
@@ -55,7 +50,7 @@ class GearmanWorkerJob extends CComponent implements IGearmanWorkerJob
      */
     public function getIdentifier()
     {
-        return $this->job->unique();
+        return $this->_job->unique();
     }
 
     /**
@@ -65,7 +60,7 @@ class GearmanWorkerJob extends CComponent implements IGearmanWorkerJob
      */
     public function getWorkload()
     {
-        return $this->job->workload();
+        return $this->_job->workload();
     }
 
     /**
@@ -78,7 +73,7 @@ class GearmanWorkerJob extends CComponent implements IGearmanWorkerJob
      */
     public function sendComplete($data)
     {
-        return $this->job->sendComplete($data);
+        return $this->_job->sendComplete($data);
     }
 
     /**
@@ -89,6 +84,6 @@ class GearmanWorkerJob extends CComponent implements IGearmanWorkerJob
      */
     public function sendException($exception)
     {
-        return $this->job->sendException($exception);
+        return $this->_job->sendException($exception);
     }
 }
