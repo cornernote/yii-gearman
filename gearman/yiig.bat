@@ -1,7 +1,7 @@
 @echo off
 
 rem -------------------------------------------------------------
-rem  Yii command line script for Windows.
+rem  Yii gearman worker script for Windows.
 rem  This is the bootstrap script for running yiig on Windows.
 rem -------------------------------------------------------------
 
