@@ -164,7 +164,7 @@ class EGearmanApplication extends CApplication implements IGearmanApplication
             }
             else {
                 $handlerId = $route->getHandlerId();
-                $actionId = $route->getCommandName();
+                $actionId = $route->getActionId();
             }
 
             $handler = $this->createHandler($handlerId);
