@@ -3,7 +3,7 @@
 /**
  * DefaultHandler
  *
- * You chould copy this file to your protected folder (application.handlers).
+ * You should copy this file to your protected folder (application.handlers).
  */
 class DefaultHandler extends EGearmanHandler
 {

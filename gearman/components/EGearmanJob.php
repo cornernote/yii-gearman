@@ -68,7 +68,6 @@ class EGearmanJob extends CComponent implements IGearmanJob
      *
      * @link http://php.net/manual/en/gearmanjob.sendcomplete.php
      * @param $data
-     * @internal param string $result Serialized result data
      * @return bool
      */
     public function sendComplete($data)
